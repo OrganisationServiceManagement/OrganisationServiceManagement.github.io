@@ -211,6 +211,7 @@
 
     /* ─── About ────────────────────────────────────────────────────────── */
     .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+    #why .about-grid { align-items: start; }
     @media (max-width: 768px) { .about-grid { grid-template-columns: 1fr; } }
     .about-banner img { border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 100%; }
     .about-content p { margin-bottom: 1rem; }
@@ -478,149 +479,145 @@
       <div class="about-grid">
         <!-- Left column -->
         <div class="about-banner reveal">
-          <img
-            src="https://raw.githubusercontent.com/OrganisationServiceManagement/.github/refs/heads/main/assets/osm-banner.svg"
-            alt="OSM — Organisation Service Management banner"
-            loading="lazy"
-            style="border-radius:12px; box-shadow: var(--shadow-lg);"
-          />
+          <div class="about-content">
+            <span class="pill">Defined, Shared, and Codified</span>
+            <h2>Automation scales safely only with a defined operating model.</h2>
+            <span class="accent-bar" style="margin-left:0;"></span>
+
+            <p style="margin-top:1.25rem;">
+              Without a defined <strong>data</strong> and <strong>operating model</strong>, increasing automation,
+              data flow, and AI utilisation can lead to:
+            </p>
+
+            <!-- Risks -->
+            <ul class="philosophy-list" style="margin-top:.75rem;">
+              <li>
+                <span class="check-icon" aria-hidden="true">
+                  <!-- alert icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                </span>
+                <span>🔻 decreased efficiency</span>
+              </li>
+              <li>
+                <span class="check-icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                </span>
+                <span>⛔ inability to continuously improve</span>
+              </li>
+              <li>
+                <span class="check-icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                </span>
+                <span>🕳️ loss of organisational knowledge</span>
+              </li>
+              <li>
+                <span class="check-icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                </span>
+                <span>🧰 blind dependency on tools</span>
+              </li>
+            </ul>
+
+            <p style="margin-top:1rem;">
+              Without a defined data and operating model, organisations fail to leverage the exponential growth
+              in data ingestion, automation, and AI. Ever-increasing complexity—paired with reduced
+              “in-the-loop” organisational knowledge—limits efficiency gains and can ultimately lead to failure.
+            </p>
+
+            <blockquote cite="https://dl.acm.org/doi/10.1145/3708478" style="margin-top:1rem;">
+              <p>
+                <em>
+                  An Ontology-driven Knowledge Graph (OKG) is a knowledge representation system where a formal ontology
+                  (defining concepts, relations, and rules) guides the construction, validation, and querying of a knowledge graph.
+                  Unlike data-only graphs, OKGs use an explicit semantic schema to ensure data consistency, enabling advanced AI reasoning
+                  and automated knowledge management.
+                </em>
+              </p>
+              <p style="margin-top:.5rem;">
+                — “An Ontology-driven Knowledge Graph (OKG) …”
+                (<a href="https://dl.acm.org/doi/10.1145/3708478">ACM</a>)
+              </p>
+            </blockquote>
+
+            <p style="margin-top:1rem;">
+              Primarily, <strong>OSM</strong> provides a flexible, extensible, open-source <strong>schema-as-code</strong>:
+              <code>schema.OSM</code>, defined in alignment with <a href="https://osm.dev/#standards">industry standards</a>.
+              OSM addresses these failure modes by providing <strong>type safety for organisational management</strong> via an
+              <strong>Ontology-driven Knowledge Graph (OKG)</strong>:
+            </p>
+          </div>
         </div>
 
         <!-- Right column -->
-        <div class="about-content reveal reveal-delay-1">
-          <span class="pill">Defined, Shared, and Codified</span>
-          <h2>Automation scales safely only with a defined operating model.</h2>
-          <span class="accent-bar" style="margin-left:0;"></span>
-
-          <p style="margin-top:1.25rem;">
-            Without a defined <strong>data</strong> and <strong>operating model</strong>, increasing automation,
-            data flow, and AI utilisation can lead to:
-          </p>
-
-          <!-- Risks -->
-          <ul class="philosophy-list" style="margin-top:.75rem;">
-            <li>
-              <span class="check-icon" aria-hidden="true">
-                <!-- alert icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                  <line x1="12" y1="9" x2="12" y2="13"></line>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-              </span>
-              <span>🔻 decreased efficiency</span>
-            </li>
-            <li>
-              <span class="check-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                  <line x1="12" y1="9" x2="12" y2="13"></line>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-              </span>
-              <span>⛔ inability to continuously improve</span>
-            </li>
-            <li>
-              <span class="check-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                  <line x1="12" y1="9" x2="12" y2="13"></line>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-              </span>
-              <span>🕳️ loss of organisational knowledge</span>
-            </li>
-            <li>
-              <span class="check-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                  <line x1="12" y1="9" x2="12" y2="13"></line>
-                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-              </span>
-              <span>🧰 blind dependency on tools</span>
-            </li>
-          </ul>
-
-          <p style="margin-top:1rem;">
-            Without a defined data and operating model, organisations fail to leverage the exponential growth
-            in data ingestion, automation, and AI. Ever-increasing complexity—paired with reduced
-            “in-the-loop” organisational knowledge—limits efficiency gains and can ultimately lead to failure.
-          </p>
-
-          <blockquote cite="https://dl.acm.org/doi/10.1145/3708478" style="margin-top:1rem;">
-            <p>
-              <em>
-                An Ontology-driven Knowledge Graph (OKG) is a knowledge representation system where a formal ontology
-                (defining concepts, relations, and rules) guides the construction, validation, and querying of a knowledge graph.
-                Unlike data-only graphs, OKGs use an explicit semantic schema to ensure data consistency, enabling advanced AI reasoning
-                and automated knowledge management.
-              </em>
-            </p>
-            <p style="margin-top:.5rem;">
-              — “An Ontology-driven Knowledge Graph (OKG) …”
-              (<a href="https://dl.acm.org/doi/10.1145/3708478">ACM</a>)
-            </p>
-          </blockquote>
-
-          <p style="margin-top:1rem;">
-            Primarily, <strong>OSM</strong> provides a flexible, extensible, open-source <strong>schema-as-code</strong>:
-            <code>schema.OSM</code>, defined in alignment with <a href="https://osm.dev/#standards">industry standards</a>.
-            OSM addresses these failure modes by providing <strong>type safety for organisational management</strong> via an
-            <strong>Ontology-driven Knowledge Graph (OKG)</strong>:
-          </p>
-
-          <!-- Fixes -->
-          <ul class="philosophy-list" style="margin-top:.75rem;">
-            <li>
-              <span class="check-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </span>
-              <span><strong>Efficiency:</strong> typed entities/relationships reduce ambiguity and rework.</span>
-            </li>
-            <li>
-              <span class="check-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </span>
-              <span><strong>Continuous improvement:</strong> consistent semantics make performance measurable and comparable over time.</span>
-            </li>
-            <li>
-              <span class="check-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </span>
-              <span><strong>Knowledge retention:</strong> ontology + graph capture operating context as versioned, queryable knowledge.</span>
-            </li>
-            <li>
-              <span class="check-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </span>
-              <span><strong>Tool independence:</strong> automation/AI are schema-constrained; tools can change without losing meaning.</span>
-            </li>
-            <li>
-              <span class="check-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </span>
-              <span><strong>Controlled complexity:</strong> constraints/validation prevent inconsistent models from accumulating.</span>
-            </li>
-            <li>
-              <span class="check-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </span>
-              <span><strong>Safer AI use:</strong> explicit types/relations improve reasoning, traceability, and auditability.</span>
-            </li>
-          </ul>
+        <div class="about-banner reveal reveal-delay-1">
+          <div class="about-content">
+            <ul class="philosophy-list" style="margin-top:.75rem;">
+              <li>
+                <span class="check-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span><strong>Efficiency:</strong> typed entities/relationships reduce ambiguity and rework.</span>
+              </li>
+              <li>
+                <span class="check-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span><strong>Continuous improvement:</strong> consistent semantics make performance measurable and comparable over time.</span>
+              </li>
+              <li>
+                <span class="check-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span><strong>Knowledge retention:</strong> ontology + graph capture operating context as versioned, queryable knowledge.</span>
+              </li>
+              <li>
+                <span class="check-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span><strong>Tool independence:</strong> automation/AI are schema-constrained; tools can change without losing meaning.</span>
+              </li>
+              <li>
+                <span class="check-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span><strong>Controlled complexity:</strong> constraints/validation prevent inconsistent models from accumulating.</span>
+              </li>
+              <li>
+                <span class="check-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </span>
+                <span><strong>Safer AI use:</strong> explicit types/relations improve reasoning, traceability, and auditability.</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
