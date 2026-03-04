@@ -1218,6 +1218,7 @@
     const reposError   = document.getElementById('reposError');
 
     const PER_PAGE = 30;
+    const MAX_REPOS = 9;
     const repoSources = [
       { url: `https://api.github.com/orgs/OrganisationServiceManagement/repos?type=public&sort=updated&per_page=${PER_PAGE}` },
       { url: `https://api.github.com/orgs/zoak-solutions/repos?type=public&sort=updated&per_page=${PER_PAGE}` },
@@ -1229,7 +1230,6 @@
       { name: 'markz0r', url: 'https://github.com/markz0r' },
     ].map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`).join(' • ');
 
-    const MAX_REPOS = 9;
     const fetchRepoSource = (source) => (
       fetch(source.url)
         .then(r => r.ok ? r.json() : Promise.reject(r.status))
