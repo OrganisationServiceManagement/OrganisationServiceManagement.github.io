@@ -896,11 +896,7 @@
         <p>Loading repositories…</p>
       </div>
       <div id="reposError" style="display:none"></div>
-      <div class="repo-links" aria-label="Repository sources">
-        <a href="https://github.com/OrganisationServiceManagement" target="_blank" rel="noopener">OrganisationServiceManagement</a>
-        <a href="https://github.com/zoak-solutions" target="_blank" rel="noopener">zoak-solutions</a>
-        <a href="https://github.com/markz0r" target="_blank" rel="noopener">markz0r</a>
-      </div>
+      <div class="repo-links" id="repoLinks" aria-label="Repository sources"></div>
       <div class="repos-grid" id="reposGrid"></div>
     </div>
   </section>
@@ -1243,6 +1239,7 @@
     const reposGrid    = document.getElementById('reposGrid');
     const reposLoading = document.getElementById('reposLoading');
     const reposError   = document.getElementById('reposError');
+    const repoLinks    = document.getElementById('repoLinks');
 
     const PER_PAGE = 100;
     const REPOS_PER_VIEW = 9;
@@ -1268,6 +1265,11 @@
     const repoLinksHtml = repoSources
       .map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`)
       .join(' • ');
+    if (repoLinks) {
+      repoLinks.innerHTML = repoSources
+        .map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`)
+        .join('');
+    }
 
     const buildRepoUrl = (source, page) => (
       `${source.api}?type=public&sort=updated&per_page=${PER_PAGE}&page=${page}`
@@ -1275,6 +1277,7 @@
     const fetchRepoSource = async (source) => {
       let page = 1;
       let data = [];
+      let hasMore = true;
       const repos = [];
       do {
         const response = await fetch(buildRepoUrl(source, page));
@@ -1283,8 +1286,15 @@
         }
         data = await response.json();
         repos.push(...data);
+        const remaining = Number(response.headers.get('X-RateLimit-Remaining'));
+        if (Number.isFinite(remaining) && remaining === 0) {
+          console.warn(`GitHub rate limit reached while fetching ${source.name}.`);
+          hasMore = false;
+        } else {
+          hasMore = data.length === PER_PAGE;
+        }
         page += 1;
-      } while (data.length === PER_PAGE);
+      } while (hasMore);
       return { source: source.name, repos };
     };
     const isDisplayableRepo = (repo) => (
@@ -1390,10 +1400,10 @@
             intervalId = null;
           };
           const carouselObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting) startCarousel();
-              else stopCarousel();
-            });
+            const entry = entries[0];
+            if (!entry) return;
+            if (entry.isIntersecting) startCarousel();
+            else stopCarousel();
           }, { threshold: 0.2 });
           carouselObserver.observe(reposGrid);
           window.addEventListener('beforeunload', () => {
