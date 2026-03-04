@@ -1141,13 +1141,12 @@
       svg.appendChild(path);
       return svg;
     };
-    const escapeHtml = (value) => String(value).replace(/[&<>"'/]/g, (char) => ({
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
       "'": '&#39;',
-      '/': '&#x2F;',
     }[char]));
     const sanitizeUrl = (value) => {
       try {
@@ -1329,7 +1328,7 @@
         const label = document.createElement('span');
         label.textContent = link.name;
         anchor.appendChild(label);
-        anchor.setAttribute('aria-label', `View ${escapeHtml(link.name)} repositories on GitHub`);
+        anchor.setAttribute('aria-label', `View ${link.name} repositories on GitHub`);
         return anchor;
       }));
     }
