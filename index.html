@@ -1245,6 +1245,7 @@
     const REPOS_PER_VIEW = 9;
     const CAROUSEL_INTERVAL = 8000;
     const CAROUSEL_FADE_MS = 450;
+    const CAROUSEL_VISIBILITY_THRESHOLD = 0.2;
     const repoSources = [
       {
         name: 'OrganisationServiceManagement',
@@ -1286,7 +1287,7 @@
         pageRepos = await response.json();
         sourceRepos.push(...pageRepos);
         const remaining = Number(response.headers.get('X-RateLimit-Remaining'));
-        if (Number.isFinite(remaining) && remaining < 1) {
+        if (Number.isFinite(remaining) && remaining <= 0) {
           console.warn(`GitHub rate limit reached while fetching ${source.name}.`);
           rateLimitReached = true;
         }
@@ -1306,7 +1307,10 @@
         }));
         const fulfilled = resultsBySource
           .filter(entry => entry.result.status === 'fulfilled')
-          .map(entry => entry.result.value);
+          .map(entry => ({
+            ...entry.result.value,
+            source: entry.source,
+          }));
         const failures = resultsBySource.filter(entry => entry.result.status === 'rejected');
         if (failures.length) {
           console.warn(
@@ -1390,7 +1394,7 @@
           });
         };
         updateCarousel(0);
-        if (ordered.length > visibleCount) {
+        if (ordered.length > REPOS_PER_VIEW) {
           let startIndex = 0;
           let intervalId = null;
           const advanceCarousel = () => {
@@ -1415,7 +1419,7 @@
               if (entry.isIntersecting) startCarousel();
               else stopCarousel();
             });
-          }, { threshold: 0.2 });
+          }, { threshold: CAROUSEL_VISIBILITY_THRESHOLD });
           carouselObserver.observe(reposGrid);
         }
       })
