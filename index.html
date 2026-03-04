@@ -37,6 +37,7 @@
       --shadow-md: 0 4px 16px rgba(0,0,0,.10);
       --shadow-lg: 0 8px 32px rgba(0,0,0,.14);
       --radius: 12px;
+      --repo-card-height: 260px;
       --transition: .3s cubic-bezier(.4,0,.2,1);
     }
     [data-theme='dark'] {
@@ -279,15 +280,24 @@
     .repo-card {
       background: var(--color-card); border: 1px solid var(--color-border); border-radius: var(--radius);
       padding: 1.5rem; transition: all var(--transition); display: flex; flex-direction: column;
+      width: 100%; height: var(--repo-card-height); overflow: hidden;
     }
     .repo-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--color-primary); }
-    .repo-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .85rem; margin: 1.5rem 0 2rem; }
-    .repo-links a {
-      font-size: .85rem; font-weight: 600; color: var(--color-text-secondary);
-      padding: .35rem .8rem; border-radius: 999px; border: 1px solid var(--color-border);
-      transition: all var(--transition); background: var(--color-card);
+    .repo-links {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem;
+      margin: 1.5rem 0 2rem;
     }
-    .repo-links a:hover { color: var(--color-primary); border-color: var(--color-primary); opacity: 1; }
+    .repo-links a {
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem; width: 100%;
+      font-size: .85rem; font-weight: 600; color: var(--color-text-secondary);
+      padding: .45rem .8rem; border-radius: 12px; border: 1px solid transparent;
+      transition: all var(--transition); background: transparent;
+    }
+    .repo-links a:hover {
+      color: var(--color-primary); border-color: var(--color-primary);
+      background: rgba(242,116,89,.08); transform: translateY(-1px); opacity: 1;
+    }
+    .repo-link-icon { width: 16px; height: 16px; }
     .repo-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
     .repo-source {
       display: inline-flex; align-items: center; align-self: flex-start;
@@ -295,10 +305,18 @@
       color: var(--color-accent); background: rgba(99,197,246,.12); border: 1px solid rgba(99,197,246,.3);
       padding: .2rem .55rem; border-radius: 999px; margin-bottom: .85rem;
     }
-    .repo-name { font-weight: 600; color: var(--color-text-primary); font-size: 1rem; }
+    .repo-name {
+      font-weight: 600; color: var(--color-text-primary); font-size: 1rem;
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+      line-clamp: 2; overflow: hidden;
+    }
     .repo-lang { display: flex; align-items: center; gap: .35rem; font-size: .8rem; color: var(--color-text-secondary); }
     .lang-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-primary); }
-    .repo-desc { font-size: .875rem; color: var(--color-text-secondary); flex: 1; margin-bottom: 1rem; }
+    .repo-desc {
+      font-size: .875rem; color: var(--color-text-secondary); flex: 1; margin-bottom: 1rem;
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+      line-clamp: 3; overflow: hidden;
+    }
     .repo-footer { display: flex; align-items: center; gap: 1rem; margin-top: auto; }
     .repo-stat { display: flex; align-items: center; gap: .3rem; font-size: .8rem; color: var(--color-accent); }
     #reposLoading, #reposError { text-align: center; color: var(--color-text-secondary); padding: 2rem; }
@@ -1111,6 +1129,34 @@
   <script>
   (() => {
     'use strict';
+    const GITHUB_ICON_PATH = 'M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z';
+    const createGithubIcon = () => {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'repo-link-icon');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('fill', 'currentColor');
+      svg.setAttribute('aria-hidden', 'true');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', GITHUB_ICON_PATH);
+      svg.appendChild(path);
+      return svg;
+    };
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[char]));
+    const sanitizeUrl = (value) => {
+      try {
+        const url = new URL(String(value));
+        if (!['http:', 'https:'].includes(url.protocol)) return '#';
+        return escapeHtml(url.href);
+      } catch (error) {
+        return '#';
+      }
+    };
 
     /* ── Theme toggle ──────────────────────────────────────────────────── */
     const html = document.documentElement;
@@ -1236,6 +1282,7 @@
       Shell: '#89e051', HCL: '#844FBA', YAML: '#cb171e',
     };
     const DEFAULT_LANG_COLOR = '#63C5F6';
+    const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
     const reposGrid    = document.getElementById('reposGrid');
     const reposLoading = document.getElementById('reposLoading');
     const reposError   = document.getElementById('reposError');
@@ -1264,11 +1311,26 @@
       },
     ];
     const buildRepoLinksHtml = (separator = '') => repoSources
-      .map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`)
+      .map(link => {
+        const safeName = escapeHtml(link.name);
+        const safeUrl = sanitizeUrl(link.url);
+        return `<a href="${safeUrl}" target="_blank" rel="noopener">${safeName}</a>`;
+      })
       .join(separator);
     const repoLinksHtml = buildRepoLinksHtml(' • ');
     if (repoLinks) {
-      repoLinks.innerHTML = buildRepoLinksHtml();
+      repoLinks.replaceChildren(...repoSources.map(link => {
+        const anchor = document.createElement('a');
+        anchor.href = link.url;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener';
+        anchor.appendChild(createGithubIcon());
+        const label = document.createElement('span');
+        label.textContent = link.name;
+        anchor.appendChild(label);
+        anchor.setAttribute('aria-label', `View ${link.name} repositories on GitHub`);
+        return anchor;
+      }));
     }
 
     const buildRepoUrl = (source, page) => (
@@ -1351,17 +1413,25 @@
           }))
           .sort((a, b) => b.updatedAt - a.updatedAt);
         const renderRepoCard = (card, entry) => {
-          const color = langColors[entry.repo.language] || DEFAULT_LANG_COLOR;
+          const rawColor = langColors[entry.repo.language] || DEFAULT_LANG_COLOR;
+          const normalizedColor = rawColor.trim();
+          const color = HEX_COLOR_REGEX.test(normalizedColor) ? normalizedColor : DEFAULT_LANG_COLOR;
+          const repoName = escapeHtml(entry.repo.name);
+          const repoUrl = sanitizeUrl(entry.repo.html_url);
+          const description = entry.repo.description || 'No description provided.';
+          const safeDescription = escapeHtml(description);
+          const repoLanguage = escapeHtml(entry.repo.language || 'N/A');
+          const repoSource = escapeHtml(entry.source);
           card.innerHTML = `
             <div class="repo-card-header">
-              <a href="${entry.repo.html_url}" target="_blank" rel="noopener" class="repo-name">${entry.repo.name}</a>
+              <a href="${repoUrl}" target="_blank" rel="noopener" class="repo-name">${repoName}</a>
               <div class="repo-lang">
                 <span class="lang-dot" style="background:${color}"></span>
-                ${entry.repo.language || 'N/A'}
+                ${repoLanguage}
               </div>
             </div>
-            <span class="repo-source">${entry.source}</span>
-            <p class="repo-desc">${entry.repo.description || 'No description provided.'}</p>
+            <span class="repo-source">${repoSource}</span>
+            <p class="repo-desc">${safeDescription}</p>
             <div class="repo-footer">
               <span class="repo-stat">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -1375,6 +1445,10 @@
                 ${new Date(entry.repo.updated_at).toLocaleDateString('en-AU', {month:'short',year:'numeric'})}
               </span>
             </div>`;
+          const repoNameLink = card.querySelector('.repo-name');
+          if (repoNameLink) repoNameLink.title = repoNameLink.textContent || '';
+          const repoDesc = card.querySelector('.repo-desc');
+          if (repoDesc) repoDesc.title = repoDesc.textContent || '';
         };
         const visibleCount = Math.min(REPOS_PER_VIEW, ordered.length);
         const cards = [];
