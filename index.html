@@ -1241,7 +1241,11 @@
     const fetchRepoSource = (url) => {
       const sourceName = getSourceName(url);
       return fetch(url)
-        .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch repositories for ${sourceName}: ${r.status}`)));
+        .then(r => {
+          if (r.ok) return r.json();
+          const status = r.status;
+          return Promise.reject(new Error(`Failed to fetch repositories for ${sourceName}: ${status}`));
+        });
     };
     const isDisplayableRepo = (repo) => (
       !repo.archived && !repo.fork && repo.name !== '.github' && !repo.name.endsWith('.github.io')
@@ -1249,10 +1253,14 @@
     Promise.allSettled(repoSources.map(fetchRepoSource))
       .then(results => {
         reposLoading.style.display = 'none';
-        const fulfilled = results.filter(result => result.status === 'fulfilled');
-        const failures = results.filter(result => result.status === 'rejected');
+        const resultsBySource = results.map((result, index) => ({
+          result,
+          source: getSourceName(repoSources[index]),
+        }));
+        const fulfilled = resultsBySource.filter(entry => entry.result.status === 'fulfilled').map(entry => entry.result);
+        const failures = resultsBySource.filter(entry => entry.result.status === 'rejected');
         if (failures.length) {
-          console.warn('Failed to load some repository sources:', failures.map(failure => failure.reason));
+          console.warn('Failed to load some repository sources:', failures.map(failure => failure.source));
         }
         if (!fulfilled.length) {
           reposError.innerHTML = `<p>Could not load repositories from ${repoLinksHtml}.</p>`;
