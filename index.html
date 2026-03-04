@@ -1217,7 +1217,7 @@
     const reposLoading = document.getElementById('reposLoading');
     const reposError   = document.getElementById('reposError');
 
-    const PER_PAGE = 15;
+    const PER_PAGE = 25;
     const MAX_REPOS = 9;
     const repoSources = [
       `https://api.github.com/orgs/OrganisationServiceManagement/repos?type=public&sort=updated&per_page=${PER_PAGE}`,
@@ -1255,7 +1255,7 @@
           console.warn('Failed to load some repository sources:', failures.map(failure => failure.reason));
         }
         if (!fulfilled.length) {
-          reposError.innerHTML = `<p>Could not load repositories. ${repoLinksHtml}</p>`;
+          reposError.innerHTML = `<p>Could not load repositories from ${repoLinksHtml}.</p>`;
           reposError.style.display = '';
           return;
         }
@@ -1266,10 +1266,10 @@
           reposError.style.display = '';
           return;
         }
-        filtered
-          .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))
-          .slice(0, MAX_REPOS)
-          .forEach((repo, i) => {
+        const ordered = filtered
+          .map(repo => ({ repo, updatedAt: new Date(repo.updated_at).getTime() }))
+          .sort((a, b) => b.updatedAt - a.updatedAt);
+        ordered.slice(0, MAX_REPOS).forEach(({ repo }, i) => {
           const delay = ['', 'reveal-delay-1', 'reveal-delay-2'][i % 3];
           const color = langColors[repo.language] || DEFAULT_LANG_COLOR;
           const card = document.createElement('div');
