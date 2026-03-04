@@ -896,7 +896,7 @@
         <p>Loading repositories…</p>
       </div>
       <div id="reposError" style="display:none"></div>
-      <nav class="repo-links" id="repoLinks" aria-label="Repository sources"></nav>
+      <nav class="repo-links" id="repoLinks" aria-label="Links to GitHub repository sources"></nav>
       <div class="repos-grid" id="reposGrid"></div>
     </div>
   </section>
@@ -1286,7 +1286,7 @@
         pageRepos = await response.json();
         sourceRepos.push(...pageRepos);
         const remaining = Number(response.headers.get('X-RateLimit-Remaining'));
-        if (Number.isFinite(remaining) && remaining === 0) {
+        if (Number.isFinite(remaining) && remaining <= 1) {
           console.warn(`GitHub rate limit reached while fetching ${source.name}.`);
           rateLimitReached = true;
         }
@@ -1326,11 +1326,17 @@
           reposError.style.display = '';
           return;
         }
+        const formatSourceList = (sources) => {
+          if (sources.length <= 1) return sources.join('');
+          if (sources.length === 2) return sources.join(' and ');
+          return `${sources.slice(0, -1).join(', ')} and ${sources[sources.length - 1]}`;
+        };
         const rateLimitedSources = fulfilled
           .filter(entry => entry.rateLimitReached)
           .map(entry => entry.source);
         if (rateLimitedSources.length) {
-          reposError.innerHTML = `<p>GitHub rate limit reached while loading ${rateLimitedSources.join(', ')} repositories. Showing available results. ${repoLinksHtml}</p>`;
+          const rateLimitList = formatSourceList(rateLimitedSources);
+          reposError.innerHTML = `<p>GitHub rate limit reached while loading ${rateLimitList} repositories. Showing available results. ${repoLinksHtml}</p>`;
           reposError.style.display = '';
         }
         const ordered = filtered
@@ -1387,7 +1393,7 @@
           let startIndex = 0;
           let intervalId = null;
           const advanceCarousel = () => {
-            startIndex = (startIndex + visibleCount) % ordered.length;
+            startIndex = (startIndex + 1) % ordered.length;
             reposGrid.classList.add('is-fading');
             setTimeout(() => {
               updateCarousel(startIndex);
@@ -1410,10 +1416,6 @@
             });
           }, { threshold: 0.2 });
           carouselObserver.observe(reposGrid);
-          window.addEventListener('beforeunload', () => {
-            stopCarousel();
-            carouselObserver.disconnect();
-          }, { once: true });
         }
       })
       .catch(() => {
