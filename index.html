@@ -896,7 +896,7 @@
         <p>Loading repositories…</p>
       </div>
       <div id="reposError" style="display:none"></div>
-      <div class="repo-links" id="repoLinks" aria-label="Repository sources"></div>
+      <nav class="repo-links" id="repoLinks" aria-label="Repository sources"></nav>
       <div class="repos-grid" id="reposGrid"></div>
     </div>
   </section>
@@ -1262,13 +1262,12 @@
         api: 'https://api.github.com/users/markz0r/repos',
       },
     ];
-    const repoLinksHtml = repoSources
+    const buildRepoLinksHtml = (separator = '') => repoSources
       .map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`)
-      .join(' • ');
+      .join(separator);
+    const repoLinksHtml = buildRepoLinksHtml(' • ');
     if (repoLinks) {
-      repoLinks.innerHTML = repoSources
-        .map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`)
-        .join('');
+      repoLinks.innerHTML = buildRepoLinksHtml();
     }
 
     const buildRepoUrl = (source, page) => (
@@ -1404,10 +1403,11 @@
             clearInterval(intervalId);
             intervalId = null;
           };
-          const carouselObserver = new IntersectionObserver(([entry]) => {
-            if (!entry) return;
-            if (entry.isIntersecting) startCarousel();
-            else stopCarousel();
+          const carouselObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) startCarousel();
+              else stopCarousel();
+            });
           }, { threshold: 0.2 });
           carouselObserver.observe(reposGrid);
           window.addEventListener('beforeunload', () => {
