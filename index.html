@@ -1141,13 +1141,22 @@
       svg.appendChild(path);
       return svg;
     };
-    const escapeHtml = (value) => String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-    const sanitizeUrl = (value) => escapeHtml(encodeURI(String(value)));
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[char]));
+    const sanitizeUrl = (value) => {
+      try {
+        const url = new URL(String(value));
+        if (!['http:', 'https:'].includes(url.protocol)) return '#';
+        return escapeHtml(url.href);
+      } catch (error) {
+        return '#';
+      }
+    };
 
     /* ── Theme toggle ──────────────────────────────────────────────────── */
     const html = document.documentElement;
@@ -1319,7 +1328,7 @@
         const label = document.createElement('span');
         label.textContent = link.name;
         anchor.appendChild(label);
-        anchor.setAttribute('aria-label', `View ${escapeHtml(label.textContent || '')} repositories on GitHub`);
+        anchor.setAttribute('aria-label', `View ${label.textContent || ''} repositories on GitHub`);
         return anchor;
       }));
     }
@@ -1405,7 +1414,8 @@
           .sort((a, b) => b.updatedAt - a.updatedAt);
         const renderRepoCard = (card, entry) => {
           const rawColor = langColors[entry.repo.language] || DEFAULT_LANG_COLOR;
-          const color = HEX_COLOR_REGEX.test(rawColor) ? rawColor : DEFAULT_LANG_COLOR;
+          const normalizedColor = rawColor.trim();
+          const color = HEX_COLOR_REGEX.test(normalizedColor) ? normalizedColor : DEFAULT_LANG_COLOR;
           const repoName = escapeHtml(entry.repo.name);
           const repoUrl = sanitizeUrl(entry.repo.html_url);
           const description = entry.repo.description || 'No description provided.';
