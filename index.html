@@ -1322,7 +1322,7 @@
           reposError.style.display = '';
           return;
         }
-        const repos = fulfilled.flatMap(entry => entry.repos.map(repo => ({ repo, source: entry.source })));
+        const repos = fulfilled.flatMap(({ repos, source }) => repos.map(repo => ({ repo, source })));
         const filtered = repos.filter(entry => isDisplayableRepo(entry.repo));
         if (!filtered.length) {
           reposError.innerHTML = `<p>No public repositories found yet. ${repoLinksHtml}</p>`;
@@ -1399,8 +1399,7 @@
             clearInterval(intervalId);
             intervalId = null;
           };
-          const carouselObserver = new IntersectionObserver((entries) => {
-            const entry = entries[0];
+          const carouselObserver = new IntersectionObserver(([entry]) => {
             if (!entry) return;
             if (entry.isIntersecting) startCarousel();
             else stopCarousel();
