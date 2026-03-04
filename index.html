@@ -169,8 +169,11 @@
     }
     @keyframes pulse-bg { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.15); opacity: .6; } }
 
-    .hero-inner { position: relative; z-index: 1; max-width: 780px; }
-    .hero-logo { width: min(120px, 22vw); margin-bottom: 2rem; animation: fadeInUp .8s ease both; filter: drop-shadow(0 8px 24px rgba(242,116,89,.3)); }
+    .hero-inner { position: relative; z-index: 1; max-width: 1100px; }
+    .hero-logo {
+      width: min(900px, 70vw); height: auto; max-width: 900px; max-height: 900px;
+      margin-bottom: 2rem; animation: fadeInUp .8s ease both; filter: drop-shadow(0 8px 24px rgba(242,116,89,.3));
+    }
     .hero-eyebrow { animation: fadeInUp .8s .1s ease both; }
     .hero-title { animation: fadeInUp .8s .2s ease both; margin: .75rem 0 1.25rem; }
     .hero-subtitle {
@@ -266,13 +269,32 @@
     .status-dot.partial { background: var(--color-focus); }
 
     /* ─── Repos ────────────────────────────────────────────────────────── */
-    .repos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+    .repos-grid {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem;
+      transition: opacity .45s ease, transform .45s ease;
+    }
+    .repos-grid.is-fading { opacity: 0; transform: translateY(12px); }
+    @media (max-width: 980px) { .repos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) { .repos-grid { grid-template-columns: 1fr; } }
     .repo-card {
       background: var(--color-card); border: 1px solid var(--color-border); border-radius: var(--radius);
       padding: 1.5rem; transition: all var(--transition); display: flex; flex-direction: column;
     }
     .repo-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--color-primary); }
+    .repo-links { display: flex; flex-wrap: wrap; justify-content: center; gap: .85rem; margin: 1.5rem 0 2rem; }
+    .repo-links a {
+      font-size: .85rem; font-weight: 600; color: var(--color-text-secondary);
+      padding: .35rem .8rem; border-radius: 999px; border: 1px solid var(--color-border);
+      transition: all var(--transition); background: var(--color-card);
+    }
+    .repo-links a:hover { color: var(--color-primary); border-color: var(--color-primary); opacity: 1; }
     .repo-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
+    .repo-source {
+      display: inline-flex; align-items: center; align-self: flex-start;
+      font-size: .65rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--color-accent); background: rgba(99,197,246,.12); border: 1px solid rgba(99,197,246,.3);
+      padding: .2rem .55rem; border-radius: 999px; margin-bottom: .85rem;
+    }
     .repo-name { font-weight: 600; color: var(--color-text-primary); font-size: 1rem; }
     .repo-lang { display: flex; align-items: center; gap: .35rem; font-size: .8rem; color: var(--color-text-secondary); }
     .lang-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-primary); }
@@ -393,7 +415,7 @@
         <a href="#modules">Modules</a>
         <a href="#standards">Standards</a>
         <a href="#repos">Open Source</a>
-        <a href="#widgets">Tools</a>
+        <a href="#widgets">More Info</a>
         <a href="#contact">Contact</a>
       </div>
 
@@ -874,6 +896,7 @@
         <p>Loading repositories…</p>
       </div>
       <div id="reposError" style="display:none"></div>
+      <nav class="repo-links" id="repoLinks" aria-label="View all repositories from GitHub sources"></nav>
       <div class="repos-grid" id="reposGrid"></div>
     </div>
   </section>
@@ -882,8 +905,8 @@
   <section id="widgets" class="section">
     <div class="container">
       <div class="section-title reveal">
-        <span class="pill">Live Tools</span>
-        <h2>Handy <span>Widgets</span></h2>
+        <span class="pill">More Information</span>
+        <h2>Status and <span>Updates</span></h2>
       </div>
       <div class="widgets-grid">
 
@@ -1216,37 +1239,61 @@
     const reposGrid    = document.getElementById('reposGrid');
     const reposLoading = document.getElementById('reposLoading');
     const reposError   = document.getElementById('reposError');
+    const repoLinks    = document.getElementById('repoLinks');
 
-    const PER_PAGE = 25;
-    const MAX_REPOS = 9;
+    const PER_PAGE = 100;
+    const REPOS_PER_VIEW = 9;
+    const CAROUSEL_INTERVAL = 8000;
+    const CAROUSEL_FADE_MS = 450;
+    const CAROUSEL_VISIBILITY_THRESHOLD = 0.2;
     const repoSources = [
-      `https://api.github.com/orgs/OrganisationServiceManagement/repos?type=public&sort=updated&per_page=${PER_PAGE}`,
-      `https://api.github.com/orgs/zoak-solutions/repos?type=public&sort=updated&per_page=${PER_PAGE}`,
-      `https://api.github.com/users/markz0r/repos?type=public&sort=updated&per_page=${PER_PAGE}`,
+      {
+        name: 'OrganisationServiceManagement',
+        url: 'https://github.com/OrganisationServiceManagement',
+        api: 'https://api.github.com/orgs/OrganisationServiceManagement/repos',
+      },
+      {
+        name: 'zoak-solutions',
+        url: 'https://github.com/zoak-solutions',
+        api: 'https://api.github.com/orgs/zoak-solutions/repos',
+      },
+      {
+        name: 'markz0r',
+        url: 'https://github.com/markz0r',
+        api: 'https://api.github.com/users/markz0r/repos',
+      },
     ];
-    const repoLinksHtml = [
-      { name: 'OrganisationServiceManagement', url: 'https://github.com/OrganisationServiceManagement' },
-      { name: 'zoak-solutions', url: 'https://github.com/zoak-solutions' },
-      { name: 'markz0r', url: 'https://github.com/markz0r' },
-    ].map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`).join(' • ');
+    const buildRepoLinksHtml = (separator = '') => repoSources
+      .map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`)
+      .join(separator);
+    const repoLinksHtml = buildRepoLinksHtml(' • ');
+    if (repoLinks) {
+      repoLinks.innerHTML = buildRepoLinksHtml();
+    }
 
-    const getAccountFromUrl = (url) => {
-      try {
-        const segments = new URL(url).pathname.split('/');
-        return segments.length > 2 ? segments[2] : 'source';
-      } catch (error) {
-        return 'source';
-      }
-    };
-    const repoSourceNames = repoSources.map(getAccountFromUrl);
-    const fetchRepoSource = (url) => {
-      const sourceName = getAccountFromUrl(url);
-      return fetch(url)
-        .then(r => {
-          if (r.ok) return r.json();
-          const status = r.status;
-          return Promise.reject(new Error(`Failed to fetch repositories for ${sourceName}: ${status}`));
-        });
+    const buildRepoUrl = (source, page) => (
+      `${source.api}?type=public&sort=updated&per_page=${PER_PAGE}&page=${page}`
+    );
+    const fetchRepoSource = async (source) => {
+      let page = 1;
+      let pageRepos = [];
+      let rateLimitReached = false;
+      const sourceRepos = [];
+      do {
+        const response = await fetch(buildRepoUrl(source, page));
+        if (!response.ok) {
+          throw new Error(`Failed to fetch repositories for ${source.name}: ${response.status}`);
+        }
+        pageRepos = await response.json();
+        sourceRepos.push(...pageRepos);
+        const remaining = Number(response.headers.get('X-RateLimit-Remaining'));
+        if (Number.isFinite(remaining) && remaining === 0) {
+          console.warn(`GitHub rate limit reached while fetching ${source.name}.`);
+          rateLimitReached = true;
+        }
+        page += 1;
+      } while (pageRepos.length === PER_PAGE && !rateLimitReached);
+      return { source: source.name, repos: sourceRepos, rateLimitReached };
     };
     const isDisplayableRepo = (repo) => (
       !repo.archived && !repo.fork && repo.name !== '.github' && !repo.name.endsWith('.github.io')
@@ -1256,9 +1303,14 @@
         reposLoading.style.display = 'none';
         const resultsBySource = results.map((result, index) => ({
           result,
-          source: repoSourceNames[index] || 'source',
+          source: repoSources[index]?.name || 'source',
         }));
-        const fulfilled = resultsBySource.filter(entry => entry.result.status === 'fulfilled');
+        const fulfilled = resultsBySource
+          .filter(entry => entry.result.status === 'fulfilled')
+          .map(entry => ({
+            ...entry.result.value,
+            source: entry.source,
+          }));
         const failures = resultsBySource.filter(entry => entry.result.status === 'rejected');
         if (failures.length) {
           console.warn(
@@ -1271,46 +1323,106 @@
           reposError.style.display = '';
           return;
         }
-        const repos = fulfilled.flatMap(entry => entry.result.value);
-        const filtered = repos.filter(isDisplayableRepo);
+        const repos = fulfilled.flatMap(({ repos, source }) => repos.map(repo => ({ repo, source })));
+        const filtered = repos.filter(entry => isDisplayableRepo(entry.repo));
         if (!filtered.length) {
           reposError.innerHTML = `<p>No public repositories found yet. ${repoLinksHtml}</p>`;
           reposError.style.display = '';
           return;
         }
+        const formatSourceList = (sources) => {
+          if (!sources.length) return '';
+          if (sources.length === 1) return sources[0];
+          if (sources.length === 2) return sources.join(' and ');
+          return `${sources.slice(0, -1).join(', ')} and ${sources[sources.length - 1]}`;
+        };
+        const rateLimitedSources = fulfilled
+          .filter(entry => entry.rateLimitReached)
+          .map(entry => entry.source);
+        if (rateLimitedSources.length) {
+          const rateLimitList = formatSourceList(rateLimitedSources);
+          reposError.innerHTML = `<p>GitHub rate limit reached while loading ${rateLimitList} repositories. Showing available results. ${repoLinksHtml}</p>`;
+          reposError.style.display = '';
+        }
         const ordered = filtered
-          .map(repo => ({ repo, updatedAt: new Date(repo.updated_at).getTime() }))
+          .map(entry => ({
+            ...entry,
+            updatedAt: new Date(entry.repo.updated_at).getTime(),
+          }))
           .sort((a, b) => b.updatedAt - a.updatedAt);
-        ordered.slice(0, MAX_REPOS).forEach(({ repo }, i) => {
-          const delay = ['', 'reveal-delay-1', 'reveal-delay-2'][i % 3];
-          const color = langColors[repo.language] || DEFAULT_LANG_COLOR;
-          const card = document.createElement('div');
-          card.className = `repo-card reveal ${delay}`;
+        const renderRepoCard = (card, entry) => {
+          const color = langColors[entry.repo.language] || DEFAULT_LANG_COLOR;
           card.innerHTML = `
             <div class="repo-card-header">
-              <a href="${repo.html_url}" target="_blank" rel="noopener" class="repo-name">${repo.name}</a>
+              <a href="${entry.repo.html_url}" target="_blank" rel="noopener" class="repo-name">${entry.repo.name}</a>
               <div class="repo-lang">
                 <span class="lang-dot" style="background:${color}"></span>
-                ${repo.language || 'N/A'}
+                ${entry.repo.language || 'N/A'}
               </div>
             </div>
-            <p class="repo-desc">${repo.description || 'No description provided.'}</p>
+            <span class="repo-source">${entry.source}</span>
+            <p class="repo-desc">${entry.repo.description || 'No description provided.'}</p>
             <div class="repo-footer">
               <span class="repo-stat">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                ${repo.stargazers_count}
+                ${entry.repo.stargazers_count}
               </span>
               <span class="repo-stat">
                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
-                ${repo.forks_count}
+                ${entry.repo.forks_count}
               </span>
               <span class="repo-stat" style="margin-left:auto;font-size:.75rem;">
-                ${new Date(repo.updated_at).toLocaleDateString('en-AU', {month:'short',year:'numeric'})}
+                ${new Date(entry.repo.updated_at).toLocaleDateString('en-AU', {month:'short',year:'numeric'})}
               </span>
             </div>`;
+        };
+        const visibleCount = Math.min(REPOS_PER_VIEW, ordered.length);
+        const cards = [];
+        reposGrid.innerHTML = '';
+        for (let i = 0; i < visibleCount; i++) {
+          const delay = ['', 'reveal-delay-1', 'reveal-delay-2'][i % 3];
+          const card = document.createElement('div');
+          card.className = `repo-card reveal ${delay}`;
           reposGrid.appendChild(card);
           revealObs.observe(card);
-        });
+          cards.push(card);
+        }
+        const updateCarousel = (startIndex) => {
+          cards.forEach((card, index) => {
+            const entry = ordered[(startIndex + index) % ordered.length];
+            renderRepoCard(card, entry);
+          });
+        };
+        updateCarousel(0);
+        if (ordered.length > REPOS_PER_VIEW) {
+          let startIndex = 0;
+          let intervalId = null;
+          const carouselStep = Math.min(visibleCount, Math.max(1, ordered.length - visibleCount));
+          const advanceCarousel = () => {
+            startIndex = (startIndex + carouselStep) % ordered.length;
+            reposGrid.classList.add('is-fading');
+            setTimeout(() => {
+              updateCarousel(startIndex);
+              reposGrid.classList.remove('is-fading');
+            }, CAROUSEL_FADE_MS);
+          };
+          const startCarousel = () => {
+            if (intervalId) return;
+            intervalId = setInterval(advanceCarousel, CAROUSEL_INTERVAL);
+          };
+          const stopCarousel = () => {
+            if (!intervalId) return;
+            clearInterval(intervalId);
+            intervalId = null;
+          };
+          const carouselObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) startCarousel();
+              else stopCarousel();
+            });
+          }, { threshold: CAROUSEL_VISIBILITY_THRESHOLD });
+          carouselObserver.observe(reposGrid);
+        }
       })
       .catch(() => {
         reposLoading.style.display = 'none';
