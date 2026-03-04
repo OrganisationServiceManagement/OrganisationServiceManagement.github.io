@@ -1257,17 +1257,20 @@
           result,
           source: getSourceName(repoSources[index]),
         }));
-        const fulfilled = resultsBySource.filter(entry => entry.result.status === 'fulfilled').map(entry => entry.result);
+        const fulfilled = resultsBySource.filter(entry => entry.result.status === 'fulfilled');
         const failures = resultsBySource.filter(entry => entry.result.status === 'rejected');
         if (failures.length) {
-          console.warn('Failed to load some repository sources:', failures.map(failure => failure.source));
+          console.warn(
+            'Failed to load some repository sources:',
+            failures.map(failure => ({ source: failure.source, error: failure.result.reason })),
+          );
         }
         if (!fulfilled.length) {
           reposError.innerHTML = `<p>Could not load repositories from ${repoLinksHtml}.</p>`;
           reposError.style.display = '';
           return;
         }
-        const repos = fulfilled.flatMap(result => result.value);
+        const repos = fulfilled.flatMap(entry => entry.result.value);
         const filtered = repos.filter(isDisplayableRepo);
         if (!filtered.length) {
           reposError.innerHTML = `<p>No public repositories found yet. ${repoLinksHtml}</p>`;
