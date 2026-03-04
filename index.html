@@ -1231,8 +1231,9 @@
     ].map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`).join(' • ');
 
     const fetchRepoSource = (url) => {
+      const sourceName = new URL(url).pathname.split('/')[2] || 'source';
       return fetch(url)
-        .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch repositories: ${r.status}`)));
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch repositories for ${sourceName}: ${r.status}`)));
     };
     const isDisplayableRepo = (repo) => (
       !repo.archived && !repo.fork && repo.name !== '.github' && !repo.name.endsWith('.github.io')
@@ -1243,7 +1244,7 @@
         const fulfilled = results.filter(result => result.status === 'fulfilled');
         const failures = results.filter(result => result.status === 'rejected');
         if (failures.length) {
-          console.warn('Repository sources failed to load.', failures.map(failure => failure.reason));
+          console.warn('Failed to load some repository sources:', failures.map(failure => failure.reason));
         }
         if (!fulfilled.length) {
           reposError.innerHTML = `<p>Could not load repositories. ${repoLinksHtml}</p>`;
