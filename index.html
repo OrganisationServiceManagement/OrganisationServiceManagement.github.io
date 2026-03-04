@@ -1230,7 +1230,7 @@
       { name: 'markz0r', url: 'https://github.com/markz0r' },
     ].map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`).join(' • ');
 
-    const getSourceName = (url) => {
+    const getAccountFromUrl = (url) => {
       try {
         const segments = new URL(url).pathname.split('/');
         return segments.length > 2 ? segments[2] : 'source';
@@ -1238,8 +1238,9 @@
         return 'source';
       }
     };
+    const repoSourceNames = repoSources.map(getAccountFromUrl);
     const fetchRepoSource = (url) => {
-      const sourceName = getSourceName(url);
+      const sourceName = getAccountFromUrl(url);
       return fetch(url)
         .then(r => {
           if (r.ok) return r.json();
@@ -1255,7 +1256,7 @@
         reposLoading.style.display = 'none';
         const resultsBySource = results.map((result, index) => ({
           result,
-          source: getSourceName(repoSources[index]),
+          source: repoSourceNames[index] || 'source',
         }));
         const fulfilled = resultsBySource.filter(entry => entry.result.status === 'fulfilled');
         const failures = resultsBySource.filter(entry => entry.result.status === 'rejected');
