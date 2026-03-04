@@ -1247,6 +1247,7 @@
     const PER_PAGE = 100;
     const REPOS_PER_VIEW = 9;
     const CAROUSEL_INTERVAL = 8000;
+    const CAROUSEL_FADE_MS = 450;
     const repoSources = [
       {
         name: 'OrganisationServiceManagement',
@@ -1353,7 +1354,7 @@
         const visibleCount = Math.min(REPOS_PER_VIEW, ordered.length);
         const cards = [];
         reposGrid.innerHTML = '';
-        for (let i = 0; i < visibleCount; i += 1) {
+        for (let i = 0; i < visibleCount; i++) {
           const delay = ['', 'reveal-delay-1', 'reveal-delay-2'][i % 3];
           const card = document.createElement('div');
           card.className = `repo-card reveal ${delay}`;
@@ -1370,15 +1371,35 @@
         updateCarousel(0);
         if (ordered.length > visibleCount) {
           let startIndex = 0;
-          const intervalId = setInterval(() => {
+          let intervalId = null;
+          const advanceCarousel = () => {
             startIndex = (startIndex + visibleCount) % ordered.length;
             reposGrid.classList.add('is-fading');
             setTimeout(() => {
               updateCarousel(startIndex);
               reposGrid.classList.remove('is-fading');
-            }, 350);
-          }, CAROUSEL_INTERVAL);
-          window.addEventListener('beforeunload', () => clearInterval(intervalId), { once: true });
+            }, CAROUSEL_FADE_MS);
+          };
+          const startCarousel = () => {
+            if (intervalId) return;
+            intervalId = setInterval(advanceCarousel, CAROUSEL_INTERVAL);
+          };
+          const stopCarousel = () => {
+            if (!intervalId) return;
+            clearInterval(intervalId);
+            intervalId = null;
+          };
+          const carouselObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) startCarousel();
+              else stopCarousel();
+            });
+          }, { threshold: 0.2 });
+          carouselObserver.observe(reposGrid);
+          window.addEventListener('beforeunload', () => {
+            stopCarousel();
+            carouselObserver.disconnect();
+          }, { once: true });
         }
       })
       .catch(() => {
