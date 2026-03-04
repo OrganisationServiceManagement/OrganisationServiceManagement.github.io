@@ -1147,6 +1147,7 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+    const sanitizeUrl = (value) => escapeHtml(encodeURI(String(value)));
 
     /* ── Theme toggle ──────────────────────────────────────────────────── */
     const html = document.documentElement;
@@ -1272,7 +1273,7 @@
       Shell: '#89e051', HCL: '#844FBA', YAML: '#cb171e',
     };
     const DEFAULT_LANG_COLOR = '#63C5F6';
-    const HEX_COLOR_REGEX = /^#([0-9a-fA-F]{3}){1,2}$/;
+    const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
     const reposGrid    = document.getElementById('reposGrid');
     const reposLoading = document.getElementById('reposLoading');
     const reposError   = document.getElementById('reposError');
@@ -1303,7 +1304,7 @@
     const buildRepoLinksHtml = (separator = '') => repoSources
       .map(link => {
         const safeName = escapeHtml(link.name);
-        const safeUrl = escapeHtml(link.url);
+        const safeUrl = sanitizeUrl(link.url);
         return `<a href="${safeUrl}" target="_blank" rel="noopener">${safeName}</a>`;
       })
       .join(separator);
@@ -1318,7 +1319,7 @@
         const label = document.createElement('span');
         label.textContent = link.name;
         anchor.appendChild(label);
-        anchor.setAttribute('aria-label', `View ${label.textContent} repositories on GitHub`);
+        anchor.setAttribute('aria-label', `View ${escapeHtml(label.textContent || '')} repositories on GitHub`);
         return anchor;
       }));
     }
@@ -1406,7 +1407,7 @@
           const rawColor = langColors[entry.repo.language] || DEFAULT_LANG_COLOR;
           const color = HEX_COLOR_REGEX.test(rawColor) ? rawColor : DEFAULT_LANG_COLOR;
           const repoName = escapeHtml(entry.repo.name);
-          const repoUrl = escapeHtml(entry.repo.html_url);
+          const repoUrl = sanitizeUrl(entry.repo.html_url);
           const description = entry.repo.description || 'No description provided.';
           const safeDescription = escapeHtml(description);
           const repoLanguage = escapeHtml(entry.repo.language || 'N/A');
