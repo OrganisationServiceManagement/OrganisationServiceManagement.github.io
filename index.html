@@ -307,13 +307,15 @@
     }
     .repo-name {
       font-weight: 600; color: var(--color-text-primary); font-size: 1rem;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
     }
     .repo-lang { display: flex; align-items: center; gap: .35rem; font-size: .8rem; color: var(--color-text-secondary); }
     .lang-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-primary); }
     .repo-desc {
       font-size: .875rem; color: var(--color-text-secondary); flex: 1; margin-bottom: 1rem;
-      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+      display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3;
+      -webkit-box-orient: vertical; overflow: hidden;
     }
     .repo-footer { display: flex; align-items: center; gap: 1rem; margin-top: auto; }
     .repo-stat { display: flex; align-items: center; gap: .3rem; font-size: .8rem; color: var(--color-accent); }
@@ -1400,7 +1402,8 @@
           }))
           .sort((a, b) => b.updatedAt - a.updatedAt);
         const renderRepoCard = (card, entry) => {
-          const color = langColors[entry.repo.language] || DEFAULT_LANG_COLOR;
+          const rawColor = langColors[entry.repo.language] || DEFAULT_LANG_COLOR;
+          const color = /^#([0-9a-fA-F]{3}){1,2}$/.test(rawColor) ? rawColor : DEFAULT_LANG_COLOR;
           const repoName = escapeHtml(entry.repo.name);
           const repoUrl = escapeHtml(entry.repo.html_url);
           const description = entry.repo.description || 'No description provided.';
