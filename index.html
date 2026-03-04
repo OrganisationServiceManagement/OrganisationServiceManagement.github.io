@@ -1292,7 +1292,7 @@
     const buildRepoLinksHtml = (separator = '') => repoSources
       .map(link => {
         const safeName = escapeHtml(link.name);
-        const safeUrl = encodeURI(link.url);
+        const safeUrl = escapeHtml(link.url);
         return `<a href="${safeUrl}" target="_blank" rel="noopener" aria-label="View ${safeName} repositories on GitHub">${githubIcon}<span>${safeName}</span></a>`;
       })
       .join(separator);
@@ -1383,7 +1383,7 @@
         const renderRepoCard = (card, entry) => {
           const color = langColors[entry.repo.language] || DEFAULT_LANG_COLOR;
           const repoName = escapeHtml(entry.repo.name);
-          const repoUrl = encodeURI(entry.repo.html_url);
+          const repoUrl = escapeHtml(entry.repo.html_url);
           const description = entry.repo.description || 'No description provided.';
           const safeDescription = escapeHtml(description);
           const repoLanguage = escapeHtml(entry.repo.language || 'N/A');
@@ -1412,9 +1412,9 @@
               </span>
             </div>`;
           const repoNameLink = card.querySelector('.repo-name');
-          if (repoNameLink) repoNameLink.title = entry.repo.name;
+          if (repoNameLink) repoNameLink.title = repoNameLink.textContent || '';
           const repoDesc = card.querySelector('.repo-desc');
-          if (repoDesc) repoDesc.title = description;
+          if (repoDesc) repoDesc.title = repoDesc.textContent || '';
         };
         const visibleCount = Math.min(REPOS_PER_VIEW, ordered.length);
         const cards = [];
