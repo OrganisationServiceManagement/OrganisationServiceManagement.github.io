@@ -1217,17 +1217,35 @@
     const reposLoading = document.getElementById('reposLoading');
     const reposError   = document.getElementById('reposError');
 
-    fetch('https://api.github.com/orgs/OrganisationServiceManagement/repos?type=public&sort=updated&per_page=9')
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(repos => {
+    const repoSources = [
+      { url: 'https://api.github.com/orgs/OrganisationServiceManagement/repos?type=public&sort=updated&per_page=100' },
+      { url: 'https://api.github.com/users/zoak-solutions/repos?type=public&sort=updated&per_page=100' },
+      { url: 'https://api.github.com/users/markz0r/repos?type=public&sort=updated&per_page=100' },
+    ];
+    const repoLinksMarkup = [
+      { name: 'OrganisationServiceManagement', url: 'https://github.com/OrganisationServiceManagement' },
+      { name: 'zoak-solutions', url: 'https://github.com/zoak-solutions' },
+      { name: 'markz0r', url: 'https://github.com/markz0r' },
+    ].map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`).join(' • ');
+
+    const MAX_REPOS = 9;
+    Promise.allSettled(repoSources.map(source => fetch(source.url).then(r => r.ok ? r.json() : Promise.reject(r.status))))
+      .then(results => {
         reposLoading.style.display = 'none';
-        const filtered = repos.filter(r => !r.archived && !r.fork && r.name !== '.github');
-        if (!filtered.length) {
-          reposError.innerHTML = `<p>No public repositories found yet. <a href="https://github.com/OrganisationServiceManagement" target="_blank" rel="noopener">View on GitHub →</a></p>`;
+        if (!results.some(result => result.status === 'fulfilled')) {
+          reposError.innerHTML = `<p>Could not load repositories. ${repoLinksMarkup}</p>`;
           reposError.style.display = '';
           return;
         }
-        filtered.forEach((repo, i) => {
+        const repos = results.filter(result => result.status === 'fulfilled').flatMap(result => result.value);
+        const filtered = repos.filter(r => !r.archived && !r.fork && r.name !== '.github' && !r.name.endsWith('.github.io'));
+        if (!filtered.length) {
+          reposError.innerHTML = `<p>No public repositories found yet. ${repoLinksMarkup}</p>`;
+          reposError.style.display = '';
+          return;
+        }
+        filtered.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        filtered.slice(0, MAX_REPOS).forEach((repo, i) => {
           const delay = ['', 'reveal-delay-1', 'reveal-delay-2'][i % 3];
           const color = langColors[repo.language] || DEFAULT_LANG_COLOR;
           const card = document.createElement('div');
@@ -1260,7 +1278,7 @@
       })
       .catch(() => {
         reposLoading.style.display = 'none';
-        reposError.innerHTML = `<p>Could not load repositories. <a href="https://github.com/OrganisationServiceManagement" target="_blank" rel="noopener">View on GitHub →</a></p>`;
+        reposError.innerHTML = `<p>Could not load repositories. ${repoLinksMarkup}</p>`;
         reposError.style.display = '';
       });
 
