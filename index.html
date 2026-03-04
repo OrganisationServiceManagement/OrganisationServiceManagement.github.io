@@ -1230,8 +1230,16 @@
       { name: 'markz0r', url: 'https://github.com/markz0r' },
     ].map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`).join(' • ');
 
+    const getSourceName = (url) => {
+      try {
+        const segments = new URL(url).pathname.split('/');
+        return segments.length > 2 ? segments[2] : 'source';
+      } catch (error) {
+        return 'source';
+      }
+    };
     const fetchRepoSource = (url) => {
-      const sourceName = new URL(url).pathname.split('/')[2] || 'source';
+      const sourceName = getSourceName(url);
       return fetch(url)
         .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch repositories for ${sourceName}: ${r.status}`)));
     };
@@ -1259,10 +1267,9 @@
           return;
         }
         filtered
-          .map(repo => ({ repo, updatedAt: Date.parse(repo.updated_at) }))
-          .sort((a, b) => b.updatedAt - a.updatedAt)
+          .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at))
           .slice(0, MAX_REPOS)
-          .forEach(({ repo }, i) => {
+          .forEach((repo, i) => {
           const delay = ['', 'reveal-delay-1', 'reveal-delay-2'][i % 3];
           const color = langColors[repo.language] || DEFAULT_LANG_COLOR;
           const card = document.createElement('div');
