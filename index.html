@@ -1276,26 +1276,24 @@
     );
     const fetchRepoSource = async (source) => {
       let page = 1;
-      let data = [];
-      let hasMore = true;
-      const repos = [];
+      let pageRepos = [];
+      let rateLimitReached = false;
+      const sourceRepos = [];
       do {
         const response = await fetch(buildRepoUrl(source, page));
         if (!response.ok) {
           throw new Error(`Failed to fetch repositories for ${source.name}: ${response.status}`);
         }
-        data = await response.json();
-        repos.push(...data);
+        pageRepos = await response.json();
+        sourceRepos.push(...pageRepos);
         const remaining = Number(response.headers.get('X-RateLimit-Remaining'));
         if (Number.isFinite(remaining) && remaining === 0) {
           console.warn(`GitHub rate limit reached while fetching ${source.name}.`);
-          hasMore = false;
-        } else {
-          hasMore = data.length === PER_PAGE;
+          rateLimitReached = true;
         }
         page += 1;
-      } while (hasMore);
-      return { source: source.name, repos };
+      } while (pageRepos.length === PER_PAGE && !rateLimitReached);
+      return { source: source.name, repos: sourceRepos, rateLimitReached };
     };
     const isDisplayableRepo = (repo) => (
       !repo.archived && !repo.fork && repo.name !== '.github' && !repo.name.endsWith('.github.io')
@@ -1328,6 +1326,13 @@
           reposError.innerHTML = `<p>No public repositories found yet. ${repoLinksHtml}</p>`;
           reposError.style.display = '';
           return;
+        }
+        const rateLimitedSources = fulfilled
+          .filter(entry => entry.rateLimitReached)
+          .map(entry => entry.source);
+        if (rateLimitedSources.length) {
+          reposError.innerHTML = `<p>GitHub rate limit reached while loading ${rateLimitedSources.join(', ')} repositories. Showing available results. ${repoLinksHtml}</p>`;
+          reposError.style.display = '';
         }
         const ordered = filtered
           .map(entry => ({
