@@ -421,7 +421,7 @@
     <div class="hero-bg"></div>
     <div class="hero-inner">
       <img src="https://raw.githubusercontent.com/OrganisationServiceManagement/.github/refs/heads/main/assets/osm-logo.svg"
-           alt="OSM logo" class="hero-logo" width="120" height="120" />
+           alt="OSM logo" class="hero-logo" width="270" height="270" />
       <div class="hero-eyebrow">
         <span class="pill">osm.dev · Open Standards</span>
       </div>
@@ -1217,17 +1217,71 @@
     const reposLoading = document.getElementById('reposLoading');
     const reposError   = document.getElementById('reposError');
 
-    fetch('https://api.github.com/orgs/OrganisationServiceManagement/repos?type=public&sort=updated&per_page=9')
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(repos => {
+    const PER_PAGE = 25;
+    const MAX_REPOS = 9;
+    const repoSources = [
+      `https://api.github.com/orgs/OrganisationServiceManagement/repos?type=public&sort=updated&per_page=${PER_PAGE}`,
+      `https://api.github.com/orgs/zoak-solutions/repos?type=public&sort=updated&per_page=${PER_PAGE}`,
+      `https://api.github.com/users/markz0r/repos?type=public&sort=updated&per_page=${PER_PAGE}`,
+    ];
+    const repoLinksHtml = [
+      { name: 'OrganisationServiceManagement', url: 'https://github.com/OrganisationServiceManagement' },
+      { name: 'zoak-solutions', url: 'https://github.com/zoak-solutions' },
+      { name: 'markz0r', url: 'https://github.com/markz0r' },
+    ].map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`).join(' • ');
+
+    const getAccountFromUrl = (url) => {
+      try {
+        const segments = new URL(url).pathname.split('/');
+        return segments.length > 2 ? segments[2] : 'source';
+      } catch (error) {
+        return 'source';
+      }
+    };
+    const repoSourceNames = repoSources.map(getAccountFromUrl);
+    const fetchRepoSource = (url) => {
+      const sourceName = getAccountFromUrl(url);
+      return fetch(url)
+        .then(r => {
+          if (r.ok) return r.json();
+          const status = r.status;
+          return Promise.reject(new Error(`Failed to fetch repositories for ${sourceName}: ${status}`));
+        });
+    };
+    const isDisplayableRepo = (repo) => (
+      !repo.archived && !repo.fork && repo.name !== '.github' && !repo.name.endsWith('.github.io')
+    );
+    Promise.allSettled(repoSources.map(fetchRepoSource))
+      .then(results => {
         reposLoading.style.display = 'none';
-        const filtered = repos.filter(r => !r.archived && !r.fork && r.name !== '.github');
-        if (!filtered.length) {
-          reposError.innerHTML = `<p>No public repositories found yet. <a href="https://github.com/OrganisationServiceManagement" target="_blank" rel="noopener">View on GitHub →</a></p>`;
+        const resultsBySource = results.map((result, index) => ({
+          result,
+          source: repoSourceNames[index] || 'source',
+        }));
+        const fulfilled = resultsBySource.filter(entry => entry.result.status === 'fulfilled');
+        const failures = resultsBySource.filter(entry => entry.result.status === 'rejected');
+        if (failures.length) {
+          console.warn(
+            'Failed to load some repository sources:',
+            failures.map(failure => ({ source: failure.source, error: failure.result.reason })),
+          );
+        }
+        if (!fulfilled.length) {
+          reposError.innerHTML = `<p>Could not load repositories from ${repoLinksHtml}.</p>`;
           reposError.style.display = '';
           return;
         }
-        filtered.forEach((repo, i) => {
+        const repos = fulfilled.flatMap(entry => entry.result.value);
+        const filtered = repos.filter(isDisplayableRepo);
+        if (!filtered.length) {
+          reposError.innerHTML = `<p>No public repositories found yet. ${repoLinksHtml}</p>`;
+          reposError.style.display = '';
+          return;
+        }
+        const ordered = filtered
+          .map(repo => ({ repo, updatedAt: new Date(repo.updated_at).getTime() }))
+          .sort((a, b) => b.updatedAt - a.updatedAt);
+        ordered.slice(0, MAX_REPOS).forEach(({ repo }, i) => {
           const delay = ['', 'reveal-delay-1', 'reveal-delay-2'][i % 3];
           const color = langColors[repo.language] || DEFAULT_LANG_COLOR;
           const card = document.createElement('div');
@@ -1260,7 +1314,7 @@
       })
       .catch(() => {
         reposLoading.style.display = 'none';
-        reposError.innerHTML = `<p>Could not load repositories. <a href="https://github.com/OrganisationServiceManagement" target="_blank" rel="noopener">View on GitHub →</a></p>`;
+        reposError.innerHTML = `<p>Could not load repositories. ${repoLinksHtml}</p>`;
         reposError.style.display = '';
       });
 
