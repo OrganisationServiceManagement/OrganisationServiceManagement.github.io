@@ -1229,7 +1229,7 @@
     ].map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`).join(' • ');
 
     const MAX_REPOS = 9;
-    Promise.allSettled(repoSources.map(source => fetch(source.url).then(r => r.ok ? r.json() : Promise.reject(r.status))))
+    Promise.allSettled(repoSources.map(source => fetch(source.url).then(r => r.ok ? r.json() : Promise.reject({ status: r.status, url: source.url }))))
       .then(results => {
         reposLoading.style.display = 'none';
         if (!results.some(result => result.status === 'fulfilled')) {
@@ -1244,8 +1244,8 @@
           reposError.style.display = '';
           return;
         }
-        filtered.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-        filtered.slice(0, MAX_REPOS).forEach((repo, i) => {
+        const ordered = filtered.slice().sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        ordered.slice(0, MAX_REPOS).forEach((repo, i) => {
           const delay = ['', 'reveal-delay-1', 'reveal-delay-2'][i % 3];
           const color = langColors[repo.language] || DEFAULT_LANG_COLOR;
           const card = document.createElement('div');
