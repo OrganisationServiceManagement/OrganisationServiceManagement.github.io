@@ -1230,20 +1230,27 @@
       { name: 'markz0r', url: 'https://github.com/markz0r' },
     ].map(link => `<a href="${link.url}" target="_blank" rel="noopener">${link.name}</a>`).join(' • ');
 
-    const fetchRepoSource = (url) => (
-      fetch(url)
-        .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch ${url}: ${r.status}`)))
+    const fetchRepoSource = (url) => {
+      return fetch(url)
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch ${url}: ${r.status}`)));
+    };
+    const isDisplayableRepo = (repo) => (
+      !repo.archived && !repo.fork && repo.name !== '.github' && !repo.name.endsWith('.github.io')
     );
     Promise.allSettled(repoSources.map(fetchRepoSource))
       .then(results => {
         reposLoading.style.display = 'none';
-        if (!results.some(result => result.status === 'fulfilled')) {
+        const fulfilled = results.filter(result => result.status === 'fulfilled');
+        if (!fulfilled.length) {
           reposError.innerHTML = `<p>Could not load repositories. ${repoLinksHtml}</p>`;
           reposError.style.display = '';
           return;
         }
-        const repos = results.filter(result => result.status === 'fulfilled').flatMap(result => result.value);
-        const filtered = repos.filter(r => !r.archived && !r.fork && r.name !== '.github' && !r.name.endsWith('.github.io'));
+        if (fulfilled.length !== results.length) {
+          console.warn('Some repository sources failed to load.');
+        }
+        const repos = fulfilled.flatMap(result => result.value);
+        const filtered = repos.filter(isDisplayableRepo);
         if (!filtered.length) {
           reposError.innerHTML = `<p>No public repositories found yet. ${repoLinksHtml}</p>`;
           reposError.style.display = '';
