@@ -1273,17 +1273,17 @@
     );
     const fetchRepoSource = async (source) => {
       let page = 1;
+      let data = [];
       const repos = [];
-      while (true) {
+      do {
         const response = await fetch(buildRepoUrl(source, page));
         if (!response.ok) {
           throw new Error(`Failed to fetch repositories for ${source.name}: ${response.status}`);
         }
-        const data = await response.json();
+        data = await response.json();
         repos.push(...data);
-        if (data.length < PER_PAGE) break;
         page += 1;
-      }
+      } while (data.length === PER_PAGE);
       return { source: source.name, repos };
     };
     const isDisplayableRepo = (repo) => (
@@ -1370,7 +1370,7 @@
         updateCarousel(0);
         if (ordered.length > visibleCount) {
           let startIndex = 0;
-          setInterval(() => {
+          const intervalId = setInterval(() => {
             startIndex = (startIndex + visibleCount) % ordered.length;
             reposGrid.classList.add('is-fading');
             setTimeout(() => {
@@ -1378,6 +1378,7 @@
               reposGrid.classList.remove('is-fading');
             }, 350);
           }, CAROUSEL_INTERVAL);
+          window.addEventListener('beforeunload', () => clearInterval(intervalId), { once: true });
         }
       })
       .catch(() => {
