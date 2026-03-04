@@ -896,7 +896,7 @@
         <p>Loading repositories…</p>
       </div>
       <div id="reposError" style="display:none"></div>
-      <nav class="repo-links" id="repoLinks" aria-label="GitHub repository sources"></nav>
+      <nav class="repo-links" id="repoLinks" aria-label="View all repositories from GitHub sources"></nav>
       <div class="repos-grid" id="reposGrid"></div>
     </div>
   </section>
@@ -1287,7 +1287,7 @@
         pageRepos = await response.json();
         sourceRepos.push(...pageRepos);
         const remaining = Number(response.headers.get('X-RateLimit-Remaining'));
-        if (Number.isFinite(remaining) && remaining <= 0) {
+        if (Number.isFinite(remaining) && remaining === 0) {
           console.warn(`GitHub rate limit reached while fetching ${source.name}.`);
           rateLimitReached = true;
         }
@@ -1397,8 +1397,9 @@
         if (ordered.length > REPOS_PER_VIEW) {
           let startIndex = 0;
           let intervalId = null;
+          const carouselStep = Math.min(visibleCount, Math.max(1, ordered.length - visibleCount));
           const advanceCarousel = () => {
-            startIndex = (startIndex + visibleCount) % ordered.length;
+            startIndex = (startIndex + carouselStep) % ordered.length;
             reposGrid.classList.add('is-fading');
             setTimeout(() => {
               updateCarousel(startIndex);
