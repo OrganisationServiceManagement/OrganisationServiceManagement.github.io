@@ -1217,14 +1217,14 @@
     const reposLoading = document.getElementById('reposLoading');
     const reposError   = document.getElementById('reposError');
 
-    const PER_PAGE = 30;
+    const PER_PAGE = 15;
     const MAX_REPOS = 9;
     const repoSources = [
       `https://api.github.com/orgs/OrganisationServiceManagement/repos?type=public&sort=updated&per_page=${PER_PAGE}`,
       `https://api.github.com/orgs/zoak-solutions/repos?type=public&sort=updated&per_page=${PER_PAGE}`,
       `https://api.github.com/users/markz0r/repos?type=public&sort=updated&per_page=${PER_PAGE}`,
     ];
-    const repoLinksMarkup = [
+    const repoLinksHtml = [
       { name: 'OrganisationServiceManagement', url: 'https://github.com/OrganisationServiceManagement' },
       { name: 'zoak-solutions', url: 'https://github.com/zoak-solutions' },
       { name: 'markz0r', url: 'https://github.com/markz0r' },
@@ -1232,20 +1232,20 @@
 
     const fetchRepoSource = (url) => (
       fetch(url)
-        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch ${url}: ${r.status}`)))
     );
     Promise.allSettled(repoSources.map(fetchRepoSource))
       .then(results => {
         reposLoading.style.display = 'none';
         if (!results.some(result => result.status === 'fulfilled')) {
-          reposError.innerHTML = `<p>Could not load repositories. ${repoLinksMarkup}</p>`;
+          reposError.innerHTML = `<p>Could not load repositories. ${repoLinksHtml}</p>`;
           reposError.style.display = '';
           return;
         }
         const repos = results.filter(result => result.status === 'fulfilled').flatMap(result => result.value);
         const filtered = repos.filter(r => !r.archived && !r.fork && r.name !== '.github' && !r.name.endsWith('.github.io'));
         if (!filtered.length) {
-          reposError.innerHTML = `<p>No public repositories found yet. ${repoLinksMarkup}</p>`;
+          reposError.innerHTML = `<p>No public repositories found yet. ${repoLinksHtml}</p>`;
           reposError.style.display = '';
           return;
         }
@@ -1284,7 +1284,7 @@
       })
       .catch(() => {
         reposLoading.style.display = 'none';
-        reposError.innerHTML = `<p>Could not load repositories. ${repoLinksMarkup}</p>`;
+        reposError.innerHTML = `<p>Could not load repositories. ${repoLinksHtml}</p>`;
         reposError.style.display = '';
       });
 
