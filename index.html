@@ -1217,10 +1217,11 @@
     const reposLoading = document.getElementById('reposLoading');
     const reposError   = document.getElementById('reposError');
 
+    const PER_PAGE = 30;
     const repoSources = [
-      { url: 'https://api.github.com/orgs/OrganisationServiceManagement/repos?type=public&sort=updated&per_page=100' },
-      { url: 'https://api.github.com/users/zoak-solutions/repos?type=public&sort=updated&per_page=100' },
-      { url: 'https://api.github.com/users/markz0r/repos?type=public&sort=updated&per_page=100' },
+      { url: `https://api.github.com/orgs/OrganisationServiceManagement/repos?type=public&sort=updated&per_page=${PER_PAGE}` },
+      { url: `https://api.github.com/orgs/zoak-solutions/repos?type=public&sort=updated&per_page=${PER_PAGE}` },
+      { url: `https://api.github.com/users/markz0r/repos?type=public&sort=updated&per_page=${PER_PAGE}` },
     ];
     const repoLinksMarkup = [
       { name: 'OrganisationServiceManagement', url: 'https://github.com/OrganisationServiceManagement' },
@@ -1231,7 +1232,7 @@
     const MAX_REPOS = 9;
     const fetchRepoSource = (source) => (
       fetch(source.url)
-        .then(r => r.ok ? r.json() : Promise.reject({ status: r.status, url: source.url }))
+        .then(r => r.ok ? r.json() : Promise.reject(r.status))
     );
     Promise.allSettled(repoSources.map(fetchRepoSource))
       .then(results => {
