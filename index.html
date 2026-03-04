@@ -307,15 +307,15 @@
     }
     .repo-name {
       font-weight: 600; color: var(--color-text-primary); font-size: 1rem;
-      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
-      -webkit-box-orient: vertical; overflow: hidden;
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+      line-clamp: 2; overflow: hidden;
     }
     .repo-lang { display: flex; align-items: center; gap: .35rem; font-size: .8rem; color: var(--color-text-secondary); }
     .lang-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-primary); }
     .repo-desc {
       font-size: .875rem; color: var(--color-text-secondary); flex: 1; margin-bottom: 1rem;
-      display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3;
-      -webkit-box-orient: vertical; overflow: hidden;
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+      line-clamp: 3; overflow: hidden;
     }
     .repo-footer { display: flex; align-items: center; gap: 1rem; margin-top: auto; }
     .repo-stat { display: flex; align-items: center; gap: .3rem; font-size: .8rem; color: var(--color-accent); }
@@ -1141,12 +1141,13 @@
       svg.appendChild(path);
       return svg;
     };
-    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+    const escapeHtml = (value) => String(value).replace(/[&<>"'/]/g, (char) => ({
       '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
       "'": '&#39;',
+      '/': '&#x2F;',
     }[char]));
     const sanitizeUrl = (value) => {
       try {
@@ -1328,7 +1329,7 @@
         const label = document.createElement('span');
         label.textContent = link.name;
         anchor.appendChild(label);
-        anchor.setAttribute('aria-label', `View ${label.textContent || ''} repositories on GitHub`);
+        anchor.setAttribute('aria-label', `View ${escapeHtml(link.name)} repositories on GitHub`);
         return anchor;
       }));
     }
