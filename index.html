@@ -1232,7 +1232,7 @@
 
     const fetchRepoSource = (url) => {
       return fetch(url)
-        .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch ${url}: ${r.status}`)));
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(`Failed to fetch repositories: ${r.status}`)));
     };
     const isDisplayableRepo = (repo) => (
       !repo.archived && !repo.fork && repo.name !== '.github' && !repo.name.endsWith('.github.io')
@@ -1241,13 +1241,14 @@
       .then(results => {
         reposLoading.style.display = 'none';
         const fulfilled = results.filter(result => result.status === 'fulfilled');
+        const failures = results.filter(result => result.status === 'rejected');
+        if (failures.length) {
+          console.warn('Repository sources failed to load.', failures.map(failure => failure.reason));
+        }
         if (!fulfilled.length) {
           reposError.innerHTML = `<p>Could not load repositories. ${repoLinksHtml}</p>`;
           reposError.style.display = '';
           return;
-        }
-        if (fulfilled.length !== results.length) {
-          console.warn('Some repository sources failed to load.');
         }
         const repos = fulfilled.flatMap(result => result.value);
         const filtered = repos.filter(isDisplayableRepo);
@@ -1256,9 +1257,11 @@
           reposError.style.display = '';
           return;
         }
-        filtered.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+        filtered
+          .map(repo => ({ repo, updatedAt: Date.parse(repo.updated_at) }))
+          .sort((a, b) => b.updatedAt - a.updatedAt)
           .slice(0, MAX_REPOS)
-          .forEach((repo, i) => {
+          .forEach(({ repo }, i) => {
           const delay = ['', 'reveal-delay-1', 'reveal-delay-2'][i % 3];
           const color = langColors[repo.language] || DEFAULT_LANG_COLOR;
           const card = document.createElement('div');
